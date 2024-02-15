@@ -61,25 +61,32 @@ def create_dataclass_from_csv(csv_filepath: str) -> List[Any]:
         reader = csv.reader(csvfile)
         _ = next(reader)  # skip sep=,
         original_field_names = next(reader)
+        # Union[str, float] is being used further down in make_dataclass()
         field_names = [(sanitize_field_name(name), Union[str, float]) for name in original_field_names]
 
-    # Create the dataclass dynamically, specifying fields as Union[str, float]
+    # Create the dataclass dynamically
     DynamicDataClass: Type[Any] = make_dataclass(
         'DynamicDataClass',
-        field_names,
+        field_names,  # each field name is a tuple (somename, Union[str|float]), using the typing information from above
         frozen=True,
         slots=True
     )
 
     result = []
+    # actually read the data
     with open(csv_filepath, newline='') as csvfile:
         reader = csv.DictReader(csvfile, fieldnames=[name for name, _ in field_names])
         _ = next(reader)  # skip sep=,
         next(reader)  # Skip the header row as we already processed it
+
+        # Here is the data
         for row in reader:
+            # typing information does not actually do a type conversion, it just keeps mypy happy
+            # so we need to actually convert the data. This happens with maybe_float().
             row = {key: maybe_float(value) for key, value in row.items()}
-            data_instance = DynamicDataClass(**row)
-            result.append(data_instance)
+
+            data_instance = DynamicDataClass(**row)  # use the row to make a DynamicDataClass instance
+            result.append(data_instance)  # add the class to the result lost
 
     return result
 
@@ -87,9 +94,12 @@ def create_dataclass_from_csv(csv_filepath: str) -> List[Any]:
 # Example usage
 csv_filepath = 'testdata.csv'
 data_instances = create_dataclass_from_csv(csv_filepath)
+
+# demonstrate iterating over the data set, accessing data slots
 for instance in data_instances:
     print(instance)
     print(f"{instance.Waermepumpe=}")
 
+# show what data and methods are in a DynamicDataClass instance
 things = sorted(dir(data_instances[0]))
 print(things)
