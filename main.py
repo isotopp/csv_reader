@@ -4,8 +4,10 @@
 #
 
 import csv
+import inspect
 import re
 from dataclasses import make_dataclass
+from pprint import pprint
 from typing import List, Union, Type, Any
 
 
@@ -101,5 +103,5 @@ for instance in data_instances:
     print(f"{instance.Waermepumpe=}")
 
 # show what data and methods are in a DynamicDataClass instance
-things = sorted(dir(data_instances[0]))
-print(things)
+instance = data_instances[0]
+pprint(inspect.getmembers(instance, inspect.ismethod))
