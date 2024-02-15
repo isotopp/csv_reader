@@ -20,7 +20,7 @@ def sanitize_field_name(field_name: str) -> str:
     :return: A sanitized version of the field name suitable for use as a Python identifier.
     """
     if field_name[0].isdigit():
-        field_name = 'f_' + field_name
+        field_name = 'F' + field_name
 
     transliterations = {
         'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss',
@@ -90,3 +90,6 @@ data_instances = create_dataclass_from_csv(csv_filepath)
 for instance in data_instances:
     print(instance)
     print(f"{instance.Waermepumpe=}")
+
+things = sorted(dir(data_instances[0]))
+print(things)
